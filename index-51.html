@@ -1,0 +1,1265 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NutriBot: Misión de las Vitaminas Virtual</title>
+  <style>
+    :root {
+      --bg-gradient: linear-gradient(135deg, #0b1325 0%, #1e1b4b 50%, #311042 100%);
+      --card-bg: rgba(255, 255, 255, 0.07);
+      --card-border: rgba(255, 255, 255, 0.18);
+
+
+      --pop-cyan: #00f2ff;
+      --pop-pink: #ff3b6f;
+      --pop-yellow: #ffe600;
+      --pop-green: #00ff87;
+      --pop-purple: #a855f7;
+
+
+      --text-light: #ffffff;
+      --text-dim: #cbd5e1;
+    }
+
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Outfit', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+
+    body {
+      background: var(--bg-gradient);
+      color: var(--text-light);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 20px;
+      overflow-x: hidden;
+    }
+
+
+    /* PANTALLAS OVERLAY (INTRO, DATO CURIOSO, REGLAS) */
+    .overlay-screen {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: #0b1325;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+      transition: opacity 0.5s ease, visibility 0.5s ease;
+      padding: 20px;
+    }
+
+
+    .card-container {
+      background-color: #121c30;
+      border: 2px solid #00f2ff;
+      border-radius: 24px;
+      width: 90%;
+      max-width: 500px;
+      padding: 35px 25px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      box-shadow: 0 0 35px rgba(0, 242, 255, 0.25);
+      animation: introPop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+
+    @keyframes introPop {
+      0% { transform: scale(0.85); opacity: 0; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+
+    .thought-bubble {
+      background: #ffffff;
+      border-radius: 25px;
+      padding: 12px 24px;
+      position: relative;
+      margin-bottom: 20px;
+      animation: bounce 2s infinite ease-in-out;
+      box-shadow: 0 5px 15px rgba(255,255,255,0.2);
+    }
+
+
+    .thought-bubble::after {
+      content: '';
+      position: absolute;
+      bottom: -12px;
+      left: 40px;
+      border-width: 12px 12px 0;
+      border-style: solid;
+      border-color: #ffffff transparent;
+      display: block;
+      width: 0;
+    }
+
+
+    .thought-content {
+      font-size: 32px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+
+    .robot-avatar {
+      font-size: 85px;
+      cursor: pointer;
+      user-select: none;
+      transition: transform 0.2s;
+      filter: drop-shadow(0 0 15px rgba(0, 242, 255, 0.4));
+    }
+
+
+    .robot-avatar:hover {
+      transform: scale(1.15) rotate(6deg);
+    }
+
+
+    .title {
+      color: #ffffff;
+      font-size: 26px;
+      font-weight: 800;
+      margin: 15px 0 10px 0;
+      text-align: center;
+    }
+
+
+    .title span {
+      color: #ff3b6f;
+    }
+
+
+    .intro-subtitle {
+      color: var(--text-dim);
+      font-size: 0.95rem;
+      text-align: center;
+      margin-bottom: 25px;
+      line-height: 1.5;
+    }
+
+
+    .curious-box {
+      background: rgba(255, 230, 0, 0.08);
+      border: 1px solid var(--pop-yellow);
+      border-radius: 16px;
+      padding: 16px;
+      margin-bottom: 20px;
+      font-size: 0.92rem;
+      color: #fff;
+      line-height: 1.5;
+      text-align: left;
+    }
+
+
+    .rules-list {
+      background: rgba(0, 242, 255, 0.05);
+      border: 1px solid var(--pop-cyan);
+      border-radius: 16px;
+      padding: 18px;
+      margin-bottom: 20px;
+      font-size: 0.9rem;
+      color: var(--text-dim);
+      line-height: 1.6;
+      text-align: left;
+      width: 100%;
+    }
+
+
+    .rules-list li {
+      margin-bottom: 8px;
+      list-style-type: none;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+
+    .action-btn {
+      background: linear-gradient(90deg, #00c6ff, #0072ff);
+      color: #ffffff;
+      border: none;
+      padding: 16px 30px;
+      border-radius: 30px;
+      font-size: 17px;
+      font-weight: 800;
+      cursor: pointer;
+      width: 100%;
+      box-shadow: 0 4px 20px rgba(0, 198, 255, 0.4);
+      transition: all 0.3s ease;
+      letter-spacing: 0.5px;
+    }
+
+
+    .action-btn:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 25px rgba(0, 198, 255, 0.7);
+    }
+
+
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-8px); }
+    }
+
+
+    /* CONTENEDOR PRINCIPAL DEL JUEGO */
+    .game-container {
+      width: 100%;
+      max-width: 920px;
+      background: var(--card-bg);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-radius: 24px;
+      padding: 28px;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5), inset 0 0 2px rgba(255, 255, 255, 0.2);
+      border: 1px solid var(--card-border);
+    }
+
+
+    header {
+      text-align: center;
+      margin-bottom: 24px;
+    }
+
+
+    h1.game-title {
+      font-size: 2.2rem;
+      font-weight: 800;
+      background: linear-gradient(90deg, var(--pop-cyan), var(--pop-pink), var(--pop-yellow));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 6px;
+      letter-spacing: -0.5px;
+    }
+
+
+    .subtitle {
+      color: var(--text-dim);
+      font-size: 1rem;
+      font-weight: 500;
+    }
+
+
+    .status-header {
+      display: flex;
+      justify-content: space-between;
+      background: rgba(0, 0, 0, 0.35);
+      padding: 14px 24px;
+      border-radius: 16px;
+      margin-bottom: 24px;
+      font-weight: 700;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+
+    .badge {
+      background: linear-gradient(135deg, var(--pop-cyan), #0077ff);
+      padding: 6px 16px;
+      border-radius: 30px;
+      color: #000;
+      font-weight: 800;
+      box-shadow: 0 0 12px rgba(0, 242, 254, 0.4);
+    }
+
+
+    .badge-attempts {
+      background: linear-gradient(135deg, var(--pop-yellow), #ff9900);
+      color: #000;
+      box-shadow: 0 0 12px rgba(255, 230, 0, 0.4);
+    }
+
+
+    .game-layout {
+      display: grid;
+      grid-template-columns: 1.1fr 1fr;
+      gap: 24px;
+    }
+
+
+    @media (max-width: 800px) {
+      .game-layout { grid-template-columns: 1fr; }
+    }
+
+
+    .character-card {
+      background: rgba(0, 0, 0, 0.25);
+      border-radius: 20px;
+      padding: 22px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+
+    .bot-avatar {
+      font-size: 5.5rem;
+      margin-bottom: 8px;
+      filter: drop-shadow(0 0 15px rgba(0, 242, 254, 0.3));
+      transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+
+    .bot-avatar.bounce {
+      transform: scale(1.25) rotate(-8deg);
+    }
+
+
+    .bot-avatar.shake {
+      animation: shake 0.4s ease-in-out;
+    }
+
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      20%, 60% { transform: translateX(-10px); }
+      40%, 80% { transform: translateX(10px); }
+    }
+
+
+    .bot-status-text {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--pop-cyan);
+      margin-bottom: 18px;
+      text-align: center;
+      min-height: 28px;
+    }
+
+
+    .section-title {
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      color: var(--pop-yellow);
+      margin-bottom: 12px;
+      font-weight: 800;
+      width: 100%;
+      text-align: left;
+    }
+
+
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+      width: 100%;
+    }
+
+
+    .metric-card {
+      background: rgba(255, 255, 255, 0.05);
+      padding: 12px;
+      border-radius: 14px;
+      cursor: pointer;
+      transition: all 0.25s ease;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+
+    .metric-card:hover {
+      background: rgba(255, 255, 255, 0.12);
+      border-color: var(--pop-cyan);
+      transform: translateY(-3px);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+    }
+
+
+    .metric-title {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.85rem;
+      margin-bottom: 8px;
+      font-weight: 700;
+    }
+
+
+    .bar-container {
+      width: 100%;
+      height: 12px;
+      background: rgba(0, 0, 0, 0.5);
+      border-radius: 10px;
+      overflow: hidden;
+      padding: 2px;
+    }
+
+
+    .bar-fill {
+      height: 100%;
+      width: 0%;
+      border-radius: 8px;
+      transition: width 0.5s ease;
+    }
+
+
+    .fill-vision { background: linear-gradient(90deg, #00f2fe, #4facfe); box-shadow: 0 0 10px #00f2fe; }
+    .fill-energia { background: linear-gradient(90deg, #ffe600, #ffb700); box-shadow: 0 0 10px #ffe600; }
+    .fill-inmunidad { background: linear-gradient(90deg, #00ff87, #60efff); box-shadow: 0 0 10px #00ff87; }
+    .fill-estructura { background: linear-gradient(90deg, #ff007f, #7928ca); box-shadow: 0 0 10px #ff007f; }
+
+
+    .controls-section {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+
+    .food-buttons {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+    }
+
+
+    .btn-food {
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: var(--text-light);
+      padding: 10px 12px;
+      border-radius: 12px;
+      cursor: pointer;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      transition: all 0.2s ease;
+      font-size: 0.88rem;
+    }
+
+
+    .btn-food:hover:not(:disabled) {
+      background: linear-gradient(135deg, var(--pop-pink), var(--pop-purple));
+      border-color: transparent;
+      transform: scale(1.03);
+      box-shadow: 0 5px 15px rgba(255, 0, 127, 0.4);
+    }
+
+
+    .btn-bad-food {
+      border-color: rgba(255, 59, 111, 0.4);
+    }
+
+
+    .btn-bad-food:hover:not(:disabled) {
+      background: linear-gradient(135deg, #ff3b6f, #b91c1c) !important;
+      box-shadow: 0 5px 15px rgba(255, 59, 111, 0.6) !important;
+    }
+
+
+    .food-tag {
+      font-size: 0.65rem;
+      padding: 3px 6px;
+      border-radius: 20px;
+      background: rgba(0, 0, 0, 0.4);
+      font-weight: 600;
+    }
+
+
+    .tag-bad {
+      background: rgba(255, 59, 111, 0.3);
+      color: #ff3b6f;
+      border: 1px solid #ff3b6f;
+    }
+
+
+    .info-panel {
+      background: rgba(0, 0, 0, 0.4);
+      border-radius: 16px;
+      padding: 16px;
+      border-left: 4px solid var(--pop-cyan);
+      min-height: 110px;
+      box-shadow: inset 0 0 10px rgba(0,0,0,0.3);
+    }
+
+
+    .info-panel h4 {
+      color: var(--pop-green);
+      margin-bottom: 6px;
+      font-size: 1rem;
+    }
+
+
+    .info-panel p {
+      font-size: 0.88rem;
+      color: var(--text-dim);
+      line-height: 1.45;
+    }
+
+
+    .footer-actions {
+      display: flex;
+      margin-top: 24px;
+    }
+
+
+    .btn-action {
+      width: 100%;
+      padding: 14px;
+      border: none;
+      border-radius: 14px;
+      font-weight: 800;
+      font-size: 0.95rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+
+    .btn-reset {
+      background: rgba(255, 255, 255, 0.1);
+      color: var(--text-light);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+
+    .btn-reset:hover {
+      background: rgba(255, 255, 255, 0.2);
+      box-shadow: 0 0 15px rgba(255, 255, 255, 0.2);
+    }
+
+
+    /* MODAL DE REPORTES FINALES */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(15, 23, 42, 0.92);
+      backdrop-filter: blur(10px);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+      z-index: 100;
+      overflow-y: auto;
+    }
+
+
+    .modal-content {
+      background: #1e1b4b;
+      padding: 28px;
+      border-radius: 24px;
+      max-width: 580px;
+      width: 100%;
+      text-align: center;
+      border: 2px solid var(--pop-green);
+      box-shadow: 0 0 40px rgba(0, 255, 135, 0.3);
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+
+
+    .modal-title {
+      color: var(--pop-green);
+      font-size: 1.7rem;
+      margin-bottom: 8px;
+      font-weight: 800;
+    }
+
+
+    .modal-body {
+      font-size: 0.95rem;
+      color: var(--text-dim);
+      margin-bottom: 20px;
+      line-height: 1.5;
+      text-align: left;
+    }
+
+
+    .report-card {
+      background: rgba(0, 0, 0, 0.45);
+      border-radius: 16px;
+      padding: 20px;
+      margin: 16px 0;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      text-align: left;
+    }
+
+
+    .report-header {
+      font-size: 1.1rem;
+      font-weight: 800;
+      color: var(--pop-yellow);
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+      padding-bottom: 8px;
+      margin-bottom: 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+
+    .report-score-badge {
+      background: linear-gradient(90deg, var(--pop-pink), var(--pop-purple));
+      color: #fff;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 0.9rem;
+    }
+
+
+    .report-metrics-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+
+
+    .report-metric-item {
+      background: rgba(255,255,255,0.05);
+      padding: 8px 12px;
+      border-radius: 10px;
+      font-weight: 600;
+      font-size: 0.9rem;
+      display: flex;
+      justify-content: space-between;
+    }
+
+
+    .deficiency-panel {
+      margin-top: 16px;
+      padding: 14px;
+      border-radius: 12px;
+      background: rgba(255, 230, 0, 0.08);
+      border: 1px solid rgba(255, 230, 0, 0.35);
+      line-height: 1.5;
+    }
+    .deficiency-panel h3 { margin: 0 0 8px; color: var(--pop-yellow); font-size: 1rem; }
+    .deficiency-panel p { margin: 0 0 10px; }
+    .deficiency-panel small { display: block; color: var(--text-dim); font-size: 0.8rem; }
+    .report-decisions {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 16px;
+      font-size: 0.88rem;
+    }
+
+
+    .report-dec-box {
+      flex: 1;
+      padding: 10px;
+      border-radius: 10px;
+      text-align: center;
+      font-weight: 700;
+    }
+
+
+    .dec-correct {
+      background: rgba(0, 255, 135, 0.15);
+      border: 1px solid var(--pop-green);
+      color: var(--pop-green);
+    }
+
+
+    .dec-suboptimal {
+      background: rgba(255, 0, 127, 0.15);
+      border: 1px solid var(--pop-pink);
+      color: var(--pop-pink);
+    }
+  
+    .music-toggle {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin: 10px 0;
+      padding: 9px 14px;
+      border: 1px solid rgba(255,255,255,.22);
+      border-radius: 999px;
+      color: var(--text-main, #fff);
+      background: rgba(255,255,255,.09);
+      font: inherit;
+      font-size: .9rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform .15s ease, background .15s ease;
+    }
+    .music-toggle:hover { transform: translateY(-1px); background: rgba(255,255,255,.16); }
+\n
+
+    /* Diseño compacto y adaptable a celulares */
+    body { padding: 10px; align-items: flex-start; }
+    .overlay-screen { padding: 12px; overflow-y: auto; }
+    .card-container { width: 100%; max-width: 390px; padding: 20px 16px; border-radius: 18px; }
+    .thought-content { font-size: 24px; }
+    .robot-avatar { font-size: 58px; }
+    .title { font-size: 21px; margin: 10px 0 8px; }
+    .intro-subtitle { font-size: .82rem; margin-bottom: 16px; }
+    .curious-box, .rules-list { padding: 12px; font-size: .8rem; margin-bottom: 14px; }
+    .action-btn { padding: 11px 16px; font-size: 14px; }
+    .game-container { max-width: 760px; padding: 16px; border-radius: 18px; }
+    header { margin-bottom: 14px; }
+    h1.game-title { font-size: clamp(1.25rem, 5vw, 1.7rem); }
+    .subtitle { font-size: .82rem; }
+    .status-header { padding: 9px 12px; margin-bottom: 14px; font-size: .82rem; }
+    .badge { padding: 4px 9px; }
+    .game-layout { gap: 14px; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+    .character-card { padding: 14px; border-radius: 15px; }
+    .bot-avatar { font-size: 3.5rem; }
+    .bot-status-text { font-size: .88rem; min-height: 22px; margin-bottom: 12px; }
+    .section-title { font-size: .72rem; letter-spacing: .8px; margin-bottom: 8px; }
+    .metrics-grid { gap: 7px; }
+    .metric-card { padding: 8px; border-radius: 10px; }
+    .metric-title { font-size: .72rem; margin-bottom: 5px; gap: 4px; }
+    .bar-container { height: 8px; }
+    .controls-section { gap: 10px; }
+    .food-buttons { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 7px; }
+    .btn-food { padding: 9px 8px; border-radius: 9px; font-size: .78rem; min-width: 0; gap: 4px; }
+    .info-panel { padding: 11px; min-height: 85px; border-radius: 12px; }
+    .info-panel h4 { font-size: .88rem; }
+    .info-panel p { font-size: .78rem; }
+    .footer-actions { margin-top: 14px; }
+    .btn-action { padding: 11px; font-size: .82rem; }
+    .modal-content { max-width: 480px; padding: 18px; border-radius: 18px; }
+    .modal-title { font-size: 1.35rem; }
+    .report-card { padding: 13px; margin: 12px 0; }
+    .report-header { font-size: .9rem; }
+    @media (max-width: 560px) {
+      .game-layout { grid-template-columns: 1fr; }
+      .game-container { padding: 12px; }
+      .character-card { padding: 12px; }
+      .metrics-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .report-decisions { gap: 7px; font-size: .76rem; }
+      .report-dec-box { padding: 8px 5px; }
+    }
+
+  </style>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+
+
+  <!-- PANTALLA 1: INTRODUCCIóN -->
+  <div id="intro-screen" class="overlay-screen">
+    <div class="card-container">
+      <div class="thought-bubble">
+        <div class="thought-content">🥕🧠</div>
+      </div>
+      <div class="robot-avatar" onclick="hacerSonido()">🤖👋</div>
+      <h1 class="title">¡Bienvenido a <span>NutriBot</span>!</h1>
+      <p class="intro-subtitle">Un simulador virtual del metabolismo celular y la nutrición.</p>
+      <button class="action-btn" onclick="goToCuriousData()">🚀 INICIAR SIMULACIÓN</button>
+    </div>
+  </div>
+
+
+  <!-- PANTALLA 2: DATO CURIOSO REBUSCADO -->
+  <div id="curious-screen" class="overlay-screen" style="display: none;">
+    <div class="card-container">
+      <div class="robot-avatar">🧬🔬</div>
+      <h2 class="title">¿Sabías que...?</h2>
+      <div class="curious-box">
+        🌎 <strong>¡La diversidad alimentaria de Panamá es parte de nuestra riqueza!</strong><br><br>
+        En comparación con muchos lugares donde las dietas se vuelven cada vez más parecidas, Panamá conserva una tradición de cultivos variados: yuca, ñame, ñampí, otoe, maíz, plátano y otros productos locales. La FAO destaca el valor de proteger esta diversidad agrícola en América Latina y el Caribe, porque ayuda a conservar conocimientos y alimentos tradicionales.
+      </div>
+      <button class="action-btn" onclick="goToRules()">ENTENDIDO ➡️</button>
+    </div>
+  </div>
+
+
+  <!-- PANTALLA 3: REGLAS DEL JUEGO -->
+  <div id="rules-screen" class="overlay-screen" style="display: none;">
+    <div class="card-container">
+      <div class="robot-avatar">📋🎮</div>
+      <h2 class="title">Reglas de la misión</h2>
+      <ul class="rules-list">
+        <li>🎯 <strong>Juega tres rondas:</strong> tienes tres intentos en cada una.</li>
+        <li>🥭 <strong>Elige con variedad:</strong> cada alimento aporta vitaminas diferentes.</li>
+        <li>⚖️ <strong>Evita opciones poco nutritivas:</strong> pueden bajar tus indicadores.</li>
+        <li>🧪 <strong>Aprende:</strong> toca los indicadores para descubrir más sobre cada vitamina.</li>
+      </ul>
+      <button class="action-btn" onclick="startGame()">¡A JUGAR! 🥕</button>
+    </div>
+  </div>
+
+
+  <!-- CONTENEDOR DEL JUEGO PRINCIPAL -->
+  <div class="game-container">
+    <header>
+      <h1 class="game-title">🤖 NutriBot: Misión de las Vitaminas</h1>
+      <p class="subtitle">Una misión de nutrición con sabores y alimentos de Panamá</p>
+    </header>\n<button id="music-toggle" class="music-toggle" type="button" onclick="toggleMusic()" aria-pressed="false">🔇 Música: apagada</button>
+
+
+    <div class="status-header">
+      <div>Ronda: <span id="round-display" class="badge">1 / 3</span></div>
+      <div>Intentos restantes: <span id="attempts-display" class="badge badge-attempts">3</span></div>
+    </div>
+
+
+    <div class="game-layout">
+      <div class="character-card">
+        <div id="bot-avatar" class="bot-avatar">🤖</div>
+        <div id="bot-status" class="bot-status-text">"Preparando la ronda..."</div>
+
+
+        <div class="section-title">Objetivos de vitaminas (selecciona uno para saber más)</div>
+                <div class="metrics-grid">
+          <div class="metric-card" onclick="showMetricInfo('vitaminaA')">
+            <div class="metric-title"><span>🟠 Vitamina A</span><span id="val-vitaminaA">0%</span></div>
+            <div class="bar-container"><div id="bar-vitaminaA" class="bar-fill fill-vision"></div></div>
+          </div>
+          <div class="metric-card" onclick="showMetricInfo('vitaminaD')">
+            <div class="metric-title"><span>☀️ Vitamina D</span><span id="val-vitaminaD">0%</span></div>
+            <div class="bar-container"><div id="bar-vitaminaD" class="bar-fill fill-energia"></div></div>
+          </div>
+          <div class="metric-card" onclick="showMetricInfo('vitaminaE')">
+            <div class="metric-title"><span>🌰 Vitamina E</span><span id="val-vitaminaE">0%</span></div>
+            <div class="bar-container"><div id="bar-vitaminaE" class="bar-fill fill-inmunidad"></div></div>
+          </div>
+          <div class="metric-card" onclick="showMetricInfo('vitaminaK')">
+            <div class="metric-title"><span>🥬 Vitamina K</span><span id="val-vitaminaK">0%</span></div>
+            <div class="bar-container"><div id="bar-vitaminaK" class="bar-fill fill-estructura"></div></div>
+          </div>
+          <div class="metric-card" onclick="showMetricInfo('vitaminaC')">
+            <div class="metric-title"><span>🍊 Vitamina C</span><span id="val-vitaminaC">0%</span></div>
+            <div class="bar-container"><div id="bar-vitaminaC" class="bar-fill fill-vision"></div></div>
+          </div>
+          <div class="metric-card" onclick="showMetricInfo('complejoB')">
+            <div class="metric-title"><span>🧠 Complejo B</span><span id="val-complejoB">0%</span></div>
+            <div class="bar-container"><div id="bar-complejoB" class="bar-fill fill-energia"></div></div>
+          </div>
+        </div>
+      </div>
+      <div class="controls-section">
+        <div class="section-title">Elige un alimento</div>
+
+
+        <div class="food-buttons" id="food-buttons" aria-live="polite"></div>
+        <div class="info-panel">
+          <h4 id="info-title">Selecciona una opción</h4>
+          <p id="info-body">Elige un alimento o toca un objetivo de vitaminas para conocer su función.</p>
+        </div>
+      </div>
+    </div>
+
+
+    <div class="footer-actions">
+      <button class="btn-action btn-reset" onclick="resetFullGame()">🔄 Reiniciar Partida Completa</button>
+    </div>
+  </div>
+
+
+  <!-- MODAL DE REPORTES FINALES -->
+  <div id="report-modal" class="modal-overlay">
+    <div class="modal-content">
+      <h2 class="modal-title" id="modal-result-title">Evaluación nutricional final de las tres rondas</h2>
+      <div class="modal-body">
+        <p id="modal-result-desc"></p>
+
+
+        <div class="report-card">
+          <div class="report-header">
+            <span>🏆 INFORME GENERAL DE DESEMPEÑO</span>
+            <span class="report-score-badge">Puntuación: <strong id="report-score">0/100</strong></span>
+          </div>
+
+
+                    <div class="report-metrics-grid">
+            <div class="report-metric-item"><span>Vitamina A:</span><span id="rep-val-vitaminaA">0%</span></div>
+            <div class="report-metric-item"><span>Vitamina D:</span><span id="rep-val-vitaminaD">0%</span></div>
+            <div class="report-metric-item"><span>Vitamina E:</span><span id="rep-val-vitaminaE">0%</span></div>
+            <div class="report-metric-item"><span>Vitamina K:</span><span id="rep-val-vitaminaK">0%</span></div>
+            <div class="report-metric-item"><span>Vitamina C:</span><span id="rep-val-vitaminaC">0%</span></div>
+            <div class="report-metric-item"><span>Complejo B:</span><span id="rep-val-complejoB">0%</span></div>
+          </div>
+
+          <div class="report-decisions">
+            <div class="report-dec-box dec-correct">
+              Elecciones variadas: <span id="rep-dec-correct">0</span>
+            </div>
+            <div class="report-dec-box dec-suboptimal">
+              Elecciones con pocos micronutrientes: <span id="rep-dec-suboptimal">0</span>
+            </div>
+          </div>
+          <div class="deficiency-panel">
+            <h3>🧬 Posibles efectos de una deficiencia mantenida</h3>
+            <p id="deficiency-report">Estos son los posibles efectos asociados a los indicadores más bajos.</p>
+            <small>Importante: esto es una simulación educativa, no un diagnóstico ni una predicción personal. Los efectos reales dependen de la alimentación total, la salud y otros factores; no se puede calcular cuántos años tardaría en aparecer una condición a partir de este juego.</small>
+          </div>
+        </div>
+      </div>
+      <button class="btn-action action-btn" onclick="resetFullGame()">Jugar de nuevo</button>
+    </div>
+  </div>
+
+
+  <script>
+    function hacerSonido() {
+      alert("Bip Boop! 🤖 ¡Estoy listo para comer de forma saludable!");
+    }
+
+
+    function goToCuriousData() {
+      document.getElementById('intro-screen').style.display = 'none';
+      document.getElementById('curious-screen').style.display = 'flex';
+    }
+
+
+    function goToRules() {
+      document.getElementById('curious-screen').style.display = 'none';
+      document.getElementById('rules-screen').style.display = 'flex';
+    }
+
+
+    function startGame() {
+      const rules = document.getElementById('rules-screen');
+      rules.style.opacity = '0';
+      setTimeout(() => { 
+        rules.style.display = 'none'; 
+      }, 500);
+      initNewRound();
+    }
+
+
+    let currentRound = 1;
+    let attemptsLeft = 3; // 3 intentos por cada ronda
+    let correctDecisions = 0;
+    let suboptimalDecisions = 0;
+    let roundResults = [];
+
+    let metrics = { vitaminaA: 20, vitaminaD: 20, vitaminaE: 20, vitaminaK: 20, vitaminaC: 20, complejoB: 20 };
+
+    const metricInfoData = {
+      vitaminaA: { title: "🟠 Vitamina A", body: "Ayuda a la visión, la piel y el funcionamiento normal de las defensas. Puede encontrarse en alimentos como el zapallo y algunas frutas de pulpa anaranjada, como el mango y la papaya." },
+      vitaminaD: { title: "☀️ Vitamina D", body: "Ayuda al cuerpo a absorber calcio y mantener los huesos. Algunos alimentos que la aportan son el pescado graso, la sardina, la yema de huevo y productos fortificados." },
+      vitaminaE: { title: "🌰 Vitamina E", body: "Actúa como antioxidante y ayuda a proteger las células. El maní y algunas semillas y aceites vegetales aportan vitamina E." },
+      vitaminaK: { title: "🥬 Vitamina K", body: "Participa en la coagulación normal de la sangre y también interviene en la salud ósea. Las hojas verdes, como el culantro y otras verduras de hoja, pueden aportar vitamina K." },
+      vitaminaC: { title: "🍊 Vitamina C", body: "Contribuye a formar colágeno, ayuda a la absorción del hierro y apoya las defensas. La guayaba, la papaya y el mango pueden aportar vitamina C." },
+      complejoB: { title: "🧠 Complejo B", body: "Incluye vitaminas con funciones distintas. B6 participa en el metabolismo; B12 y el ácido fólico ayudan a formar células sanguíneas; la niacina y la riboflavina ayudan a convertir los alimentos en energía. Porotos, maíz, huevo y pescado aportan algunas vitaminas B." }
+    };
+
+    const foodEffects = {
+      yuca: { complejoB: 5, vitaminaC: 2, isBad: false, desc: "La yuca es un alimento tradicional de Panamá. Aporta principalmente carbohidratos y pequeñas cantidades de algunas vitaminas; por sí sola no cubre todas las necesidades vitamínicas." },
+      papa: { vitaminaC: 7, complejoB: 4, isBad: false, desc: "La papa aporta vitamina C y algunas vitaminas del complejo B. Su aporte cambia según la variedad y la preparación." },
+      maiz: { complejoB: 8, vitaminaA: 2, isBad: false, desc: "El maíz aporta algunas vitaminas del complejo B. Las cantidades dependen del tipo de maíz y de cómo se procese." },
+      name: { complejoB: 4, vitaminaC: 2, isBad: false, desc: "El ñame es uno de los tubérculos presentes en la alimentación panameña. Aporta energía y pequeñas cantidades de vitaminas, pero conviene combinarlo con otros alimentos." },
+      otoe: { complejoB: 4, vitaminaC: 3, isBad: false, desc: "El otoe forma parte de los cultivos tradicionales panameños. En el juego suma un aporte modesto de vitaminas para representar que cada alimento contribuye de forma diferente." },
+      zapallo: { vitaminaA: 15, vitaminaC: 4, isBad: false, desc: "El zapallo, de color anaranjado, puede aportar carotenoides que el cuerpo transforma en vitamina A, además de otros nutrientes." },
+      mango: { vitaminaA: 9, vitaminaC: 10, isBad: false, desc: "El mango aporta vitamina C y carotenoides que pueden convertirse en vitamina A. Es una fruta tropical muy apreciada en Panamá." },
+      papaya: { vitaminaA: 8, vitaminaC: 12, isBad: false, desc: "La papaya aporta vitamina C y carotenoides relacionados con la vitamina A." },
+      guayaba: { vitaminaC: 16, vitaminaA: 3, isBad: false, desc: "La guayaba es una fruta rica en vitamina C. La cantidad concreta depende de la variedad y de la porción." },
+      culantro: { vitaminaK: 12, vitaminaA: 3, vitaminaC: 3, isBad: false, desc: "El culantro, muy usado en la cocina panameña, es una hierba de hoja verde que puede aportar vitamina K y otras vitaminas. La cantidad consumida suele ser pequeña." },
+      poroto: { complejoB: 12, vitaminaE: 3, isBad: false, desc: "Los porotos aportan folato y otras vitaminas del complejo B, además de fibra y proteína vegetal." },
+      mani: { vitaminaE: 13, complejoB: 4, isBad: false, desc: "El maní aporta vitamina E y algunas vitaminas del complejo B. También es una fuente de grasas insaturadas." },
+      huevo: { vitaminaD: 7, vitaminaA: 4, complejoB: 8, isBad: false, desc: "El huevo aporta vitamina B12 y pequeñas cantidades de vitaminas A y D, especialmente en la yema." },
+      sardina: { vitaminaD: 13, vitaminaE: 3, complejoB: 10, isBad: false, desc: "La sardina aporta vitamina B12 y puede aportar vitamina D. El contenido varía según la especie y la presentación." },
+      azucar: { vitaminaA: -3, vitaminaD: -3, vitaminaE: -3, vitaminaK: -3, vitaminaC: -3, complejoB: -3, isBad: true, desc: "El azúcar aporta energía, pero prácticamente no aporta vitaminas. En la simulación, elegirla repetidamente en lugar de alimentos variados hace bajar poco a poco los indicadores vitamínicos." },
+      raspadura: { vitaminaA: -3, vitaminaD: -3, vitaminaE: -3, vitaminaK: -3, vitaminaC: -3, complejoB: -3, isBad: true, desc: "La raspadura aporta principalmente azúcares y pocas vitaminas. En la simulación, repetirla en lugar de alimentos variados reduce gradualmente los indicadores." },
+      caramelo: { vitaminaA: -2, vitaminaD: -2, vitaminaE: -2, vitaminaK: -2, vitaminaC: -2, complejoB: -2, isBad: true, desc: "El caramelo aporta principalmente azúcar y muy pocas vitaminas. Su efecto es moderado: el problema representado es desplazar repetidamente alimentos que sí aportan micronutrientes." },
+      manteca: { vitaminaE: -2, vitaminaK: -2, vitaminaC: -2, complejoB: -2, isBad: true, desc: "La manteca no es una fuente significativa de la mayoría de las vitaminas del juego. Usarla como opción repetida en lugar de una alimentación variada reduce lentamente algunos indicadores." }
+    };
+
+
+    // Banco de alimentos: cada ronda toma seis opciones al azar y las mezcla.
+    const allFoodOptions = [
+      { key: 'yuca', label: '🍠 Yuca' }, { key: 'papa', label: '🥔 Papa' },
+      { key: 'maiz', label: '🌽 Maíz' }, { key: 'name', label: '🥔 Ñame' },
+      { key: 'otoe', label: '🍠 Otoe' }, { key: 'zapallo', label: '🎃 Zapallo' },
+      { key: 'mango', label: '🥭 Mango' }, { key: 'papaya', label: '🍈 Papaya' },
+      { key: 'guayaba', label: '🍈 Guayaba' }, { key: 'culantro', label: '🌿 Culantro' },
+      { key: 'poroto', label: '🫘 Poroto' }, { key: 'mani', label: '🥜 Maní' },
+      { key: 'huevo', label: '🥚 Huevo' }, { key: 'sardina', label: '🐟 Sardina' },
+      { key: 'azucar', label: '🍬 Azúcar' }, { key: 'raspadura', label: '🍯 Raspadura' },
+      { key: 'caramelo', label: '🍭 Caramelo' }, { key: 'manteca', label: '🧈 Manteca' }
+    ];
+    let previousRoundFoodKeys = [];
+
+    function shuffleOptions(items) {
+      const shuffled = [...items];
+      for (let i = shuffled.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+      }
+      return shuffled;
+    }
+
+    function renderFoodOptions() {
+      const container = document.getElementById('food-buttons');
+      container.innerHTML = '';
+      let selected = shuffleOptions(allFoodOptions).slice(0, 6);
+      // Evita repetir exactamente el mismo grupo en dos rondas consecutivas.
+      if (currentRound > 1 && selected.every(item => previousRoundFoodKeys.includes(item.key))) {
+        selected = shuffleOptions(allFoodOptions.filter(item => !previousRoundFoodKeys.includes(item.key))).slice(0, 6);
+      }
+      previousRoundFoodKeys = selected.map(item => item.key);
+      selected.forEach(item => {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'btn-food' + (foodEffects[item.key].isBad ? ' btn-bad-food' : '');
+        button.textContent = item.label;
+        button.addEventListener('click', () => applyFood(item.key));
+        container.appendChild(button);
+      });
+    }
+
+    function initNewRound() {
+      renderFoodOptions();
+      // Reiniciar indicadores de forma independiente para cada ronda
+      metrics = {
+        vitaminaA: Math.floor(Math.random() * 15) + 15,
+        vitaminaD: Math.floor(Math.random() * 15) + 15,
+        vitaminaE: Math.floor(Math.random() * 15) + 15,
+        vitaminaK: Math.floor(Math.random() * 15) + 15,
+        vitaminaC: Math.floor(Math.random() * 15) + 15,
+        complejoB: Math.floor(Math.random() * 15) + 15
+      };
+      attemptsLeft = 3;
+      document.getElementById('bot-status').innerText = `"Comienza la ronda ${currentRound}..."`;
+      updateUI();
+    }
+
+
+    function updateUI() {
+      document.getElementById('round-display').innerText = `${currentRound} / 3`;
+      document.getElementById('attempts-display').innerText = attemptsLeft;
+
+
+      for (let m in metrics) {
+        let val = Math.min(100, Math.max(0, metrics[m]));
+        document.getElementById(`val-${m}`).innerText = `${val}%`;
+        document.getElementById(`bar-${m}`).style.width = `${val}%`;
+      }
+    }
+
+
+    function applyFood(foodKey) {
+      if (attemptsLeft <= 0) return;
+
+
+      const food = foodEffects[foodKey];
+
+
+      if (!food.isBad) {
+        correctDecisions++;
+        const avatar = document.getElementById('bot-avatar');
+        avatar.classList.add('bounce');
+        setTimeout(() => avatar.classList.remove('bounce'), 300);
+      } else {
+        suboptimalDecisions++;
+        const avatar = document.getElementById('bot-avatar');
+        avatar.classList.add('shake');
+        setTimeout(() => avatar.classList.remove('shake'), 400);
+      }
+
+
+      for (let m in food) {
+        if (m !== 'isBad' && m !== 'desc') {
+          metrics[m] = Math.min(100, Math.max(0, (metrics[m] || 0) + food[m]));
+        }
+      }
+
+
+      attemptsLeft--;
+
+
+      document.getElementById('info-title').innerText = food.isBad ? "Alimento con pocas vitaminas" : "Alimento seleccionado";
+      document.getElementById('info-body').innerText = food.desc;
+
+
+      updateUI();
+
+
+      if (attemptsLeft === 0) {
+        // Guardar el resultado de esta ronda antes de iniciar la siguiente.
+        roundResults.push({ ...metrics });
+        if (currentRound < 3) {
+          currentRound++;
+          setTimeout(() => {
+            initNewRound();
+          }, 400);
+        } else {
+          setTimeout(() => {
+            finishGame();
+          }, 400);
+        }
+      }
+    }
+
+
+    function showMetricInfo(m) {
+      document.getElementById('info-title').innerText = metricInfoData[m].title;
+      document.getElementById('info-body').innerText = metricInfoData[m].body;
+    }
+
+
+    function finishGame() {
+      let totalDecisions = correctDecisions + suboptimalDecisions;
+      let score = totalDecisions > 0 ? Math.round((correctDecisions / totalDecisions) * 100) : 0;
+
+
+      document.getElementById('report-score').innerText = `${score}/100`;
+      // El informe muestra el promedio de cada indicador al terminar las tres rondas.
+      const averageMetric = (key) => {
+        if (roundResults.length === 0) return 0;
+        const total = roundResults.reduce((sum, result) => sum + Math.min(100, Math.max(0, result[key])), 0);
+        return Math.round(total / roundResults.length);
+      };
+      const vitaminKeys = ['vitaminaA', 'vitaminaD', 'vitaminaE', 'vitaminaK', 'vitaminaC', 'complejoB'];
+      vitaminKeys.forEach(key => {
+        document.getElementById(`rep-val-${key}`).innerText = `${averageMetric(key)}%`;
+      });
+
+
+      document.getElementById('rep-dec-correct').innerText = correctDecisions;
+      document.getElementById('rep-dec-suboptimal').innerText = suboptimalDecisions;
+
+
+      document.getElementById('modal-result-desc').innerText = "¡Partida terminada! Este es el balance de tus vitaminas en las tres rondas.";
+
+      const vitaminNames = {
+        vitaminaA: 'vitamina A', vitaminaD: 'vitamina D', vitaminaE: 'vitamina E',
+        vitaminaK: 'vitamina K', vitaminaC: 'vitamina C', complejoB: 'complejo B'
+      };
+      const rankedVitamins = [...vitaminKeys].sort((a, b) => averageMetric(a) - averageMetric(b));
+      const lowVitamins = rankedVitamins.filter(key => averageMetric(key) < 35);
+      const focusVitamins = (lowVitamins.length ? lowVitamins : rankedVitamins.slice(0, 2))
+        .slice(0, 2).map(key => vitaminNames[key]);
+      const focusText = focusVitamins.join(', ').replace(/, ([^,]*)$/, ' y $1');
+      const templates = lowVitamins.length ? [
+        `En esta partida, ${focusText} quedaron bajos. Las elecciones poco variadas pudieron reducir estos indicadores; combina alimentos distintos para mejorar el equilibrio en futuras rondas.`,
+        `Tu resumen muestra niveles bajos de ${focusText}. Intenta alternar frutas, verduras, legumbres y otras opciones para aportar una mayor diversidad de vitaminas en próximas partidas.`,
+        `Durante esta partida, ${focusText} fueron los indicadores más comprometidos. Elegir alimentos variados puede ayudar a equilibrar el resultado simulado en la siguiente ronda.`,
+        `El déficit simulado se concentró en ${focusText}. Revisa tus elecciones y combina alimentos con aportes diferentes; ningún alimento cubre por sí solo todas las vitaminas.`
+      ] : [
+        `No hubo indicadores por debajo del umbral de alerta; ${focusText} fueron los valores relativamente más bajos. Mantén la variedad para conservar un balance simulado.`,
+        `Tus indicadores se mantuvieron sobre el umbral de alerta. ${focusText} quedaron relativamente más bajos, así que variar las elecciones puede ayudar a equilibrar futuras partidas.`,
+        `El resumen no muestra déficits simulados marcados; los valores más bajos fueron ${focusText}. Sigue combinando alimentos diferentes para mantener la diversidad nutricional.`
+      ];
+      const deficiencyText = templates[Math.floor(Math.random() * templates.length)];
+      document.getElementById('deficiency-report').innerText = deficiencyText;
+
+      document.getElementById('report-modal').style.display = 'flex';
+    }
+
+
+    function resetFullGame() {
+      currentRound = 1;
+      correctDecisions = 0;
+      suboptimalDecisions = 0;
+      roundResults = [];
+      previousRoundFoodKeys = [];
+      document.getElementById('report-modal').style.display = 'none';
+      initNewRound();
+    }
+  
+    // Música instrumental generada con Web Audio: no usa canciones ni archivos externos.
+    let musicContext = null;
+    let musicTimer = null;
+    let musicEnabled = false;
+    let musicStep = 0;
+    let musicMaster = null;
+
+    function startMusic() {
+      const AudioCtx = window.AudioContext || window.webkitAudioContext;
+      if (!AudioCtx) {
+        const btn = document.getElementById('music-toggle');
+        if (btn) btn.textContent = '🔇 Audio no disponible';
+        return;
+      }
+      if (!musicContext) {
+        musicContext = new AudioCtx();
+        musicMaster = musicContext.createGain();
+        musicMaster.gain.value = 0.045;
+        musicMaster.connect(musicContext.destination);
+      }
+      musicContext.resume();
+      if (musicTimer) return;
+      musicEnabled = true;
+      const notes = [523.25, 659.25, 783.99, 659.25, 587.33, 698.46, 880, 698.46,
+                     523.25, 659.25, 783.99, 987.77, 880, 783.99, 659.25, 587.33];
+      const bass = [130.81, 146.83, 164.81, 146.83, 174.61, 164.81, 146.83, 130.81];
+      const beatMs = 230;
+      musicTimer = window.setInterval(() => {
+        if (!musicEnabled || !musicContext || musicContext.state !== 'running') return;
+        const now = musicContext.currentTime;
+        const f = notes[musicStep % notes.length];
+        const o = musicContext.createOscillator();
+        const g = musicContext.createGain();
+        o.type = 'triangle';
+        o.frequency.setValueAtTime(f, now);
+        g.gain.setValueAtTime(0.0001, now);
+        g.gain.exponentialRampToValueAtTime(0.19, now + 0.025);
+        g.gain.exponentialRampToValueAtTime(0.0001, now + 0.19);
+        o.connect(g); g.connect(musicMaster);
+        o.start(now); o.stop(now + 0.2);
+
+        if (musicStep % 2 === 0) {
+          const bo = musicContext.createOscillator();
+          const bg = musicContext.createGain();
+          bo.type = 'sine';
+          bo.frequency.setValueAtTime(bass[(musicStep / 2) % bass.length], now);
+          bg.gain.setValueAtTime(0.0001, now);
+          bg.gain.exponentialRampToValueAtTime(0.10, now + 0.02);
+          bg.gain.exponentialRampToValueAtTime(0.0001, now + 0.22);
+          bo.connect(bg); bg.connect(musicMaster);
+          bo.start(now); bo.stop(now + 0.23);
+        }
+        musicStep++;
+      }, beatMs);
+      updateMusicButton();
+    }
+
+    function stopMusic() {
+      musicEnabled = false;
+      if (musicTimer) {
+        clearInterval(musicTimer);
+        musicTimer = null;
+      }
+      if (musicMaster && musicContext) {
+        const now = musicContext.currentTime;
+        musicMaster.gain.cancelScheduledValues(now);
+        musicMaster.gain.setTargetAtTime(0.0001, now, 0.04);
+      }
+      updateMusicButton();
+    }
+
+    function toggleMusic() {
+      if (musicEnabled) {
+        stopMusic();
+      } else {
+        startMusic();
+        if (musicMaster && musicContext) {
+          const now = musicContext.currentTime;
+          musicMaster.gain.cancelScheduledValues(now);
+          musicMaster.gain.setTargetAtTime(0.045, now, 0.08);
+        }
+      }
+    }
+
+    function updateMusicButton() {
+      const btn = document.getElementById('music-toggle');
+      if (!btn) return;
+      btn.textContent = musicEnabled ? '🔊 Música: activada' : '🔇 Música: apagada';
+      btn.setAttribute('aria-pressed', musicEnabled ? 'true' : 'false');
+    }
+
+    // La reproducción se inicia tras la primera interacción, por las restricciones de los navegadores.
+    document.addEventListener('pointerdown', function firstInteraction(event) {
+      // Si la primera interacción es el propio botón, deja que su clic controle la música.
+      if (event.target && event.target.closest && event.target.closest('#music-toggle')) return;
+      if (!musicEnabled) startMusic();
+      document.removeEventListener('pointerdown', firstInteraction);
+    }, { once: true });
+
+</script>
+
+
+</body>
+</html>
